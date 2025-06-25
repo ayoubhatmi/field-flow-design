@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { Plus, Trash2, Eye, Settings } from 'lucide-react';
+import { Plus, Trash2, Eye, Settings, Copy, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -65,12 +64,17 @@ const FormBuilder = () => {
   };
 
   const addPage = () => {
+    const currentPageIndex = pages.findIndex(page => page.id === activePage);
     const newPage: FormPage = {
       id: `page-${Date.now()}`,
       title: `Page ${pages.length + 1}`,
       fields: []
     };
-    setPages(prev => [...prev, newPage]);
+    
+    // Insert new page after current page
+    const newPages = [...pages];
+    newPages.splice(currentPageIndex + 1, 0, newPage);
+    setPages(newPages);
     setActivePage(newPage.id);
   };
 
@@ -79,7 +83,47 @@ const FormBuilder = () => {
     
     setPages(prev => prev.filter(page => page.id !== pageId));
     if (activePage === pageId) {
-      setActivePage(pages[0].id);
+      const currentIndex = pages.findIndex(page => page.id === pageId);
+      const newActiveIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+      const remainingPages = pages.filter(page => page.id !== pageId);
+      setActivePage(remainingPages[newActiveIndex]?.id || pages[0].id);
+    }
+  };
+
+  const duplicatePage = (pageId: string) => {
+    const pageIndex = pages.findIndex(page => page.id === pageId);
+    const pageToDuplicate = pages[pageIndex];
+    
+    const duplicatedPage: FormPage = {
+      id: `page-${Date.now()}`,
+      title: `${pageToDuplicate.title} Copy`,
+      fields: pageToDuplicate.fields.map(field => ({
+        ...field,
+        id: `field-${Date.now()}-${Math.random()}`
+      }))
+    };
+    
+    const newPages = [...pages];
+    newPages.splice(pageIndex + 1, 0, duplicatedPage);
+    setPages(newPages);
+    setActivePage(duplicatedPage.id);
+  };
+
+  const movePageUp = (pageId: string) => {
+    const pageIndex = pages.findIndex(page => page.id === pageId);
+    if (pageIndex > 0) {
+      const newPages = [...pages];
+      [newPages[pageIndex - 1], newPages[pageIndex]] = [newPages[pageIndex], newPages[pageIndex - 1]];
+      setPages(newPages);
+    }
+  };
+
+  const movePageDown = (pageId: string) => {
+    const pageIndex = pages.findIndex(page => page.id === pageId);
+    if (pageIndex < pages.length - 1) {
+      const newPages = [...pages];
+      [newPages[pageIndex], newPages[pageIndex + 1]] = [newPages[pageIndex + 1], newPages[pageIndex]];
+      setPages(newPages);
     }
   };
 
@@ -148,26 +192,66 @@ const FormBuilder = () => {
                   className="data-[state=active]:bg-purple-600 data-[state=active]:text-white relative group"
                 >
                   {page.title}
-                  {pages.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deletePage(page.id);
-                      }}
-                      className="ml-2 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
                 </TabsTrigger>
               ))}
             </TabsList>
 
             {pages.map((page) => (
               <TabsContent key={page.id} value={page.id} className="mt-4">
-                <Card className="min-h-96 border-2 border-dashed border-purple-200 bg-white/50">
-                  <CardHeader>
+                <Card className="min-h-96 border-2 border-dashed border-purple-200 bg-white/50 relative">
+                  <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-purple-800">{page.title}</CardTitle>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => duplicatePage(page.id)}
+                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100"
+                        title="Duplicate page"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => movePageUp(page.id)}
+                        disabled={pages.findIndex(p => p.id === page.id) === 0}
+                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 disabled:opacity-30"
+                        title="Move page up"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => movePageDown(page.id)}
+                        disabled={pages.findIndex(p => p.id === page.id) === pages.length - 1}
+                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 disabled:opacity-30"
+                        title="Move page down"
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={addPage}
+                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100"
+                        title="Add new page"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                      {pages.length > 1 && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deletePage(page.id)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
+                          title="Delete page"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <Droppable droppableId={page.id}>
