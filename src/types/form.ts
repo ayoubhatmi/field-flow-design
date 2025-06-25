@@ -11,12 +11,6 @@ export interface FormField {
 export interface FormPage {
   id: string;
   title: string;
+  description: string;
   fields: FormField[];
-}
-
-export interface Form {
-  id: string;
-  title: string;
-  description?: string;
-  pages: FormPage[];
 }

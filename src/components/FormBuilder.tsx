@@ -1,22 +1,34 @@
+
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { Plus, Trash2, Eye, Settings, Copy, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, Eye, Settings, Copy, ArrowUp, ArrowDown, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import FormFieldsSidebar from './FormFieldsSidebar';
 import FormPreview from './FormPreview';
 import { FormField, FormPage } from '../types/form';
 
 const FormBuilder = () => {
+  const [formTitle, setFormTitle] = useState('My Form');
+  const [formDescription, setFormDescription] = useState('Please fill out this form');
+  const [editingFormTitle, setEditingFormTitle] = useState(false);
+  const [editingFormDescription, setEditingFormDescription] = useState(false);
+  
   const [pages, setPages] = useState<FormPage[]>([
     {
       id: 'page-1',
       title: 'Page 1',
+      description: 'Enter your information below',
       fields: []
     }
   ]);
   
   const [previewMode, setPreviewMode] = useState(false);
+  const [editingPageTitle, setEditingPageTitle] = useState<string | null>(null);
+  const [editingPageDescription, setEditingPageDescription] = useState<string | null>(null);
+  const [editingFieldLabel, setEditingFieldLabel] = useState<string | null>(null);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -46,18 +58,24 @@ const FormBuilder = () => {
       ));
     }
 
-    // If reordering within the same page
-    if (source.droppableId === destination.droppableId && source.droppableId.startsWith('page-')) {
-      const pageId = source.droppableId;
-      setPages(prev => prev.map(page => {
-        if (page.id === pageId) {
-          const newFields = Array.from(page.fields);
-          const [reorderedField] = newFields.splice(source.index, 1);
-          newFields.splice(destination.index, 0, reorderedField);
-          return { ...page, fields: newFields };
-        }
-        return page;
-      }));
+    // If moving field between pages or reordering within the same page
+    if (source.droppableId.startsWith('page-') && destination.droppableId.startsWith('page-')) {
+      const sourcePageId = source.droppableId;
+      const destPageId = destination.droppableId;
+      
+      setPages(prev => {
+        const newPages = [...prev];
+        const sourcePageIndex = newPages.findIndex(page => page.id === sourcePageId);
+        const destPageIndex = newPages.findIndex(page => page.id === destPageId);
+        
+        // Get the field being moved
+        const [movedField] = newPages[sourcePageIndex].fields.splice(source.index, 1);
+        
+        // Add it to the destination page
+        newPages[destPageIndex].fields.splice(destination.index, 0, movedField);
+        
+        return newPages;
+      });
     }
   };
 
@@ -65,6 +83,7 @@ const FormBuilder = () => {
     const newPage: FormPage = {
       id: `page-${Date.now()}`,
       title: `Page ${pages.length + 1}`,
+      description: 'Add your description here',
       fields: []
     };
     
@@ -84,6 +103,7 @@ const FormBuilder = () => {
     const duplicatedPage: FormPage = {
       id: `page-${Date.now()}`,
       title: `${pageToDuplicate.title} Copy`,
+      description: pageToDuplicate.description,
       fields: pageToDuplicate.fields.map(field => ({
         ...field,
         id: `field-${Date.now()}-${Math.random()}`
@@ -121,6 +141,31 @@ const FormBuilder = () => {
     ));
   };
 
+  const updatePageTitle = (pageId: string, title: string) => {
+    setPages(prev => prev.map(page => 
+      page.id === pageId ? { ...page, title } : page
+    ));
+  };
+
+  const updatePageDescription = (pageId: string, description: string) => {
+    setPages(prev => prev.map(page => 
+      page.id === pageId ? { ...page, description } : page
+    ));
+  };
+
+  const updateFieldLabel = (pageId: string, fieldId: string, label: string) => {
+    setPages(prev => prev.map(page => 
+      page.id === pageId 
+        ? { 
+            ...page, 
+            fields: page.fields.map(field => 
+              field.id === fieldId ? { ...field, label } : field
+            )
+          }
+        : page
+    ));
+  };
+
   if (previewMode) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
@@ -132,7 +177,11 @@ const FormBuilder = () => {
               Back to Editor
             </Button>
           </div>
-          <FormPreview pages={pages} />
+          <FormPreview 
+            formTitle={formTitle} 
+            formDescription={formDescription} 
+            pages={pages} 
+          />
         </div>
       </div>
     );
@@ -152,17 +201,58 @@ const FormBuilder = () => {
 
         {/* Main Content */}
         <div className="flex-1 p-6">
-          <div className="mb-6 flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-purple-800">Form Builder</h1>
-            <div className="flex gap-2">
-              <Button onClick={() => setPreviewMode(true)} className="bg-purple-600 hover:bg-purple-700">
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
-              </Button>
-              <Button onClick={addPage} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Page
-              </Button>
+          {/* Form Header */}
+          <div className="mb-6">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex-1">
+                {editingFormTitle ? (
+                  <Input
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    onBlur={() => setEditingFormTitle(false)}
+                    onKeyDown={(e) => e.key === 'Enter' && setEditingFormTitle(false)}
+                    className="text-3xl font-bold text-purple-800 border-none p-0 shadow-none"
+                    autoFocus
+                  />
+                ) : (
+                  <h1 
+                    className="text-3xl font-bold text-purple-800 cursor-pointer hover:bg-purple-50 rounded p-2 inline-flex items-center gap-2"
+                    onClick={() => setEditingFormTitle(true)}
+                  >
+                    {formTitle}
+                    <Edit2 className="w-5 h-5 opacity-50" />
+                  </h1>
+                )}
+                
+                {editingFormDescription ? (
+                  <Textarea
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    onBlur={() => setEditingFormDescription(false)}
+                    className="text-purple-600 border-none p-0 shadow-none resize-none"
+                    autoFocus
+                  />
+                ) : (
+                  <p 
+                    className="text-purple-600 cursor-pointer hover:bg-purple-50 rounded p-2 inline-flex items-center gap-2"
+                    onClick={() => setEditingFormDescription(true)}
+                  >
+                    {formDescription}
+                    <Edit2 className="w-4 h-4 opacity-50" />
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <Button onClick={() => setPreviewMode(true)} className="bg-purple-600 hover:bg-purple-700">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview
+                </Button>
+                <Button onClick={addPage} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Page
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -171,7 +261,46 @@ const FormBuilder = () => {
             {pages.map((page, pageIndex) => (
               <Card key={page.id} className="min-h-96 border-2 border-dashed border-purple-200 bg-white/50 relative">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-purple-800">{page.title}</CardTitle>
+                  <div className="flex-1">
+                    {editingPageTitle === page.id ? (
+                      <Input
+                        value={page.title}
+                        onChange={(e) => updatePageTitle(page.id, e.target.value)}
+                        onBlur={() => setEditingPageTitle(null)}
+                        onKeyDown={(e) => e.key === 'Enter' && setEditingPageTitle(null)}
+                        className="text-lg font-semibold text-purple-800 border-none p-0 shadow-none"
+                        autoFocus
+                      />
+                    ) : (
+                      <CardTitle 
+                        className="text-purple-800 cursor-pointer hover:bg-purple-50 rounded p-2 inline-flex items-center gap-2"
+                        onClick={() => setEditingPageTitle(page.id)}
+                      >
+                        {page.title}
+                        <Edit2 className="w-4 h-4 opacity-50" />
+                      </CardTitle>
+                    )}
+                    
+                    {editingPageDescription === page.id ? (
+                      <Input
+                        value={page.description}
+                        onChange={(e) => updatePageDescription(page.id, e.target.value)}
+                        onBlur={() => setEditingPageDescription(null)}
+                        onKeyDown={(e) => e.key === 'Enter' && setEditingPageDescription(null)}
+                        className="text-sm text-purple-600 border-none p-0 shadow-none mt-1"
+                        autoFocus
+                      />
+                    ) : (
+                      <p 
+                        className="text-sm text-purple-600 cursor-pointer hover:bg-purple-50 rounded p-1 inline-flex items-center gap-2 mt-1"
+                        onClick={() => setEditingPageDescription(page.id)}
+                      >
+                        {page.description}
+                        <Edit2 className="w-3 h-3 opacity-50" />
+                      </p>
+                    )}
+                  </div>
+                  
                   <div className="flex gap-1">
                     <Button
                       size="sm"
@@ -254,10 +383,25 @@ const FormBuilder = () => {
                                   }`}
                                 >
                                   <div className="flex justify-between items-start mb-2">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                      {field.label}
-                                      {field.required && <span className="text-red-500 ml-1">*</span>}
-                                    </label>
+                                    {editingFieldLabel === field.id ? (
+                                      <Input
+                                        value={field.label}
+                                        onChange={(e) => updateFieldLabel(page.id, field.id, e.target.value)}
+                                        onBlur={() => setEditingFieldLabel(null)}
+                                        onKeyDown={(e) => e.key === 'Enter' && setEditingFieldLabel(null)}
+                                        className="text-sm font-medium text-gray-700 border-none p-0 shadow-none"
+                                        autoFocus
+                                      />
+                                    ) : (
+                                      <label 
+                                        className="block text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 rounded p-1 inline-flex items-center gap-2"
+                                        onClick={() => setEditingFieldLabel(field.id)}
+                                      >
+                                        {field.label}
+                                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                                        <Edit2 className="w-3 h-3 opacity-50" />
+                                      </label>
+                                    )}
                                     <button
                                       onClick={() => deleteField(page.id, field.id)}
                                       className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-opacity"

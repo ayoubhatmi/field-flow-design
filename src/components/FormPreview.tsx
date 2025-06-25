@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormPage } from '../types/form';
 
 interface FormPreviewProps {
+  formTitle: string;
+  formDescription: string;
   pages: FormPage[];
 }
 
-const FormPreview: React.FC<FormPreviewProps> = ({ pages }) => {
+const FormPreview: React.FC<FormPreviewProps> = ({ formTitle, formDescription, pages }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, any>>({});
 
@@ -44,12 +46,21 @@ const FormPreview: React.FC<FormPreviewProps> = ({ pages }) => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Form Header */}
+      <div className="mb-6 text-center">
+        <h1 className="text-3xl font-bold text-purple-800 mb-2">{formTitle}</h1>
+        <p className="text-purple-600">{formDescription}</p>
+      </div>
+
       <Card className="shadow-xl border-0 bg-white">
         <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
           <CardTitle className="text-center">
             {currentPage.title}
           </CardTitle>
           <div className="text-center text-sm opacity-90">
+            {currentPage.description}
+          </div>
+          <div className="text-center text-sm opacity-75">
             Page {currentPageIndex + 1} of {pages.length}
           </div>
         </CardHeader>
