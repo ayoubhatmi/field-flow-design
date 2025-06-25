@@ -3,7 +3,6 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { Plus, Trash2, Eye, Settings, Copy, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FormFieldsSidebar from './FormFieldsSidebar';
 import FormPreview from './FormPreview';
 import { FormField, FormPage } from '../types/form';
@@ -17,7 +16,6 @@ const FormBuilder = () => {
     }
   ]);
   
-  const [activePage, setActivePage] = useState('page-1');
   const [previewMode, setPreviewMode] = useState(false);
 
   const handleDragEnd = (result: DropResult) => {
@@ -64,30 +62,19 @@ const FormBuilder = () => {
   };
 
   const addPage = () => {
-    const currentPageIndex = pages.findIndex(page => page.id === activePage);
     const newPage: FormPage = {
       id: `page-${Date.now()}`,
       title: `Page ${pages.length + 1}`,
       fields: []
     };
     
-    // Insert new page after current page
-    const newPages = [...pages];
-    newPages.splice(currentPageIndex + 1, 0, newPage);
-    setPages(newPages);
-    setActivePage(newPage.id);
+    setPages(prev => [...prev, newPage]);
   };
 
   const deletePage = (pageId: string) => {
     if (pages.length === 1) return; // Don't delete the last page
     
     setPages(prev => prev.filter(page => page.id !== pageId));
-    if (activePage === pageId) {
-      const currentIndex = pages.findIndex(page => page.id === pageId);
-      const newActiveIndex = currentIndex > 0 ? currentIndex - 1 : 0;
-      const remainingPages = pages.filter(page => page.id !== pageId);
-      setActivePage(remainingPages[newActiveIndex]?.id || pages[0].id);
-    }
   };
 
   const duplicatePage = (pageId: string) => {
@@ -106,7 +93,6 @@ const FormBuilder = () => {
     const newPages = [...pages];
     newPages.splice(pageIndex + 1, 0, duplicatedPage);
     setPages(newPages);
-    setActivePage(duplicatedPage.id);
   };
 
   const movePageUp = (pageId: string) => {
@@ -134,8 +120,6 @@ const FormBuilder = () => {
         : page
     ));
   };
-
-  const currentPage = pages.find(page => page.id === activePage);
 
   if (previewMode) {
     return (
@@ -182,176 +166,162 @@ const FormBuilder = () => {
             </div>
           </div>
 
-          {/* Page Tabs */}
-          <Tabs value={activePage} onValueChange={setActivePage} className="mb-6">
-            <TabsList className="bg-purple-100">
-              {pages.map((page) => (
-                <TabsTrigger 
-                  key={page.id} 
-                  value={page.id}
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white relative group"
-                >
-                  {page.title}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {pages.map((page) => (
-              <TabsContent key={page.id} value={page.id} className="mt-4">
-                <Card className="min-h-96 border-2 border-dashed border-purple-200 bg-white/50 relative">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-purple-800">{page.title}</CardTitle>
-                    <div className="flex gap-1">
+          {/* Pages displayed vertically */}
+          <div className="space-y-6">
+            {pages.map((page, pageIndex) => (
+              <Card key={page.id} className="min-h-96 border-2 border-dashed border-purple-200 bg-white/50 relative">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-purple-800">{page.title}</CardTitle>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => duplicatePage(page.id)}
+                      className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100"
+                      title="Duplicate page"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => movePageUp(page.id)}
+                      disabled={pageIndex === 0}
+                      className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 disabled:opacity-30"
+                      title="Move page up"
+                    >
+                      <ArrowUp className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => movePageDown(page.id)}
+                      disabled={pageIndex === pages.length - 1}
+                      className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 disabled:opacity-30"
+                      title="Move page down"
+                    >
+                      <ArrowDown className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={addPage}
+                      className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100"
+                      title="Add new page"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                    {pages.length > 1 && (
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => duplicatePage(page.id)}
-                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100"
-                        title="Duplicate page"
+                        onClick={() => deletePage(page.id)}
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
+                        title="Delete page"
                       >
-                        <Copy className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => movePageUp(page.id)}
-                        disabled={pages.findIndex(p => p.id === page.id) === 0}
-                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 disabled:opacity-30"
-                        title="Move page up"
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Droppable droppableId={page.id}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={`min-h-64 p-4 rounded-lg transition-colors ${
+                          snapshot.isDraggingOver 
+                            ? 'bg-purple-100 border-purple-300' 
+                            : 'bg-white/70'
+                        }`}
                       >
-                        <ArrowUp className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => movePageDown(page.id)}
-                        disabled={pages.findIndex(p => p.id === page.id) === pages.length - 1}
-                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100 disabled:opacity-30"
-                        title="Move page down"
-                      >
-                        <ArrowDown className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={addPage}
-                        className="h-8 w-8 p-0 text-purple-600 hover:text-purple-800 hover:bg-purple-100"
-                        title="Add new page"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                      {pages.length > 1 && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => deletePage(page.id)}
-                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
-                          title="Delete page"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Droppable droppableId={page.id}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          className={`min-h-64 p-4 rounded-lg transition-colors ${
-                            snapshot.isDraggingOver 
-                              ? 'bg-purple-100 border-purple-300' 
-                              : 'bg-white/70'
-                          }`}
-                        >
-                          {page.fields.length === 0 ? (
-                            <div className="text-center text-purple-400 py-12">
-                              <p className="text-lg mb-2">Drop form fields here</p>
-                              <p className="text-sm">Drag elements from the sidebar to build your form</p>
-                            </div>
-                          ) : (
-                            page.fields.map((field, index) => (
-                              <Draggable key={field.id} draggableId={field.id} index={index}>
-                                {(provided, snapshot) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className={`mb-4 p-4 bg-white rounded-lg border border-purple-200 shadow-sm group hover:shadow-md transition-shadow ${
-                                      snapshot.isDragging ? 'shadow-lg ring-2 ring-purple-300' : ''
-                                    }`}
-                                  >
-                                    <div className="flex justify-between items-start mb-2">
-                                      <label className="block text-sm font-medium text-gray-700">
-                                        {field.label}
-                                        {field.required && <span className="text-red-500 ml-1">*</span>}
-                                      </label>
-                                      <button
-                                        onClick={() => deleteField(page.id, field.id)}
-                                        className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-opacity"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </button>
-                                    </div>
-                                    
-                                    {field.type === 'text' || field.type === 'email' || field.type === 'number' ? (
-                                      <input
-                                        type={field.type}
-                                        placeholder={field.placeholder}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                        disabled
-                                      />
-                                    ) : field.type === 'textarea' ? (
-                                      <textarea
-                                        placeholder={field.placeholder}
-                                        rows={3}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                        disabled
-                                      />
-                                    ) : field.type === 'select' ? (
-                                      <select
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                        disabled
-                                      >
-                                        <option>Select an option</option>
-                                        {field.options?.map((option, i) => (
-                                          <option key={i} value={option}>{option}</option>
-                                        ))}
-                                      </select>
-                                    ) : field.type === 'radio' ? (
-                                      <div className="space-y-2">
-                                        {field.options?.map((option, i) => (
-                                          <label key={i} className="flex items-center">
-                                            <input type="radio" name={field.id} className="mr-2" disabled />
-                                            <span className="text-sm text-gray-700">{option}</span>
-                                          </label>
-                                        ))}
-                                      </div>
-                                    ) : field.type === 'checkbox' ? (
-                                      <div className="space-y-2">
-                                        {field.options?.map((option, i) => (
-                                          <label key={i} className="flex items-center">
-                                            <input type="checkbox" className="mr-2" disabled />
-                                            <span className="text-sm text-gray-700">{option}</span>
-                                          </label>
-                                        ))}
-                                      </div>
-                                    ) : null}
+                        {page.fields.length === 0 ? (
+                          <div className="text-center text-purple-400 py-12">
+                            <p className="text-lg mb-2">Drop form fields here</p>
+                            <p className="text-sm">Drag elements from the sidebar to build your form</p>
+                          </div>
+                        ) : (
+                          page.fields.map((field, index) => (
+                            <Draggable key={field.id} draggableId={field.id} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`mb-4 p-4 bg-white rounded-lg border border-purple-200 shadow-sm group hover:shadow-md transition-shadow ${
+                                    snapshot.isDragging ? 'shadow-lg ring-2 ring-purple-300' : ''
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                      {field.label}
+                                      {field.required && <span className="text-red-500 ml-1">*</span>}
+                                    </label>
+                                    <button
+                                      onClick={() => deleteField(page.id, field.id)}
+                                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-opacity"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
                                   </div>
-                                )}
-                              </Draggable>
-                            ))
-                          )}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                                  
+                                  {field.type === 'text' || field.type === 'email' || field.type === 'number' ? (
+                                    <input
+                                      type={field.type}
+                                      placeholder={field.placeholder}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      disabled
+                                    />
+                                  ) : field.type === 'textarea' ? (
+                                    <textarea
+                                      placeholder={field.placeholder}
+                                      rows={3}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      disabled
+                                    />
+                                  ) : field.type === 'select' ? (
+                                    <select
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      disabled
+                                    >
+                                      <option>Select an option</option>
+                                      {field.options?.map((option, i) => (
+                                        <option key={i} value={option}>{option}</option>
+                                      ))}
+                                    </select>
+                                  ) : field.type === 'radio' ? (
+                                    <div className="space-y-2">
+                                      {field.options?.map((option, i) => (
+                                        <label key={i} className="flex items-center">
+                                          <input type="radio" name={field.id} className="mr-2" disabled />
+                                          <span className="text-sm text-gray-700">{option}</span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  ) : field.type === 'checkbox' ? (
+                                    <div className="space-y-2">
+                                      {field.options?.map((option, i) => (
+                                        <label key={i} className="flex items-center">
+                                          <input type="checkbox" className="mr-2" disabled />
+                                          <span className="text-sm text-gray-700">{option}</span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              )}
+                            </Draggable>
+                          ))
+                        )}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </CardContent>
+              </Card>
             ))}
-          </Tabs>
+          </div>
         </div>
       </div>
     </DragDropContext>
