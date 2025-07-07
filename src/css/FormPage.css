@@ -1,0 +1,149 @@
+.form-page-container {
+  min-height: 24rem;
+  border-width: 2px;
+  border-style: dashed;
+  border-color: #ddd6fe;
+  background-color: rgba(255, 255, 255, 0.5);
+  position: relative;
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+.form-page-content {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.form-page-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.page-title-input {
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: none;
+  padding: 0.5rem;
+  box-shadow: none;
+  margin-bottom: 0.25rem;
+}
+
+.page-title-display {
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+  flex-wrap: wrap;
+}
+
+.page-title-display:hover {
+  background-color: #f5f3ff;
+}
+
+.page-badge {
+  background-color: #ede9fe;
+  color: #6b21a8;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 6px;
+  border-radius: 999px;
+  line-height: 1;
+}
+
+.page-controls {
+  display: flex;
+  gap: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+.page-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2rem;
+  width: 2rem;
+  padding: 0;
+  color: #7e22ce;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.page-button:hover {
+  color: #5b21b6;
+  background-color: #f3e8ff;
+}
+
+.page-button.delete {
+  color: #ef4444;
+}
+.page-button.delete:hover {
+  color: #b91c1c;
+  background-color: #fee2e2;
+}
+
+.page-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-description-input {
+  font-size: 0.875rem;
+  border: none;
+  padding: 0.5rem;
+  box-shadow: none;
+  margin-top: 0.25rem;
+}
+
+.page-description-display {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #6b7280;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  width: fit-content;
+  transition: background-color 0.2s ease;
+}
+
+.page-description-display:hover {
+  background-color: #f5f3ff;
+}
+
+.droppable-area {
+  min-height: 16rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.droppable-area.dragging-over {
+  background-color: #ede9fe;
+  border: 1px solid #ddd6fe;
+}
+
+.droppable-area.not-dragging {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-state {
+  text-align: center;
+  color: #c084fc;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.empty-state-title {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-subtitle {
+  font-size: 0.875rem;
+}

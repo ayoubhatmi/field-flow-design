@@ -1,0 +1,87 @@
+.form-preview-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid #6b46c1;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.form-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: white;
+  background-color: #6b46c1;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.form-description {
+  font-size: 1rem;
+  color: #6b46c1;
+}
+
+.page-header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: #cc2c7f;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: white;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.page-description {
+  font-size: 1rem;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fields-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #6b46c1;
+}
+
+.required {
+  color: red;
+  margin-left: 0.25rem;
+}
+
+.field-description {
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

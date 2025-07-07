@@ -1,0 +1,83 @@
+.card-header-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.purple-bar {
+  width: 12px;
+  height: 36px;
+  background-color: #6b46c1;
+  border-radius: 8px;
+  margin-right: 14px;
+}
+
+.form-header-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #6b46c1;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.form-header {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6b46c1;
+  cursor: pointer;
+}
+
+.form-header-input {
+  font-size: 1.75rem;
+  font-weight: 600;
+  border: none;
+  padding: 0.5rem;
+  box-shadow: none;
+  margin-bottom: 0.25rem;
+  width: fit-content;
+}
+
+.form-header-display {
+  cursor: pointer;
+  font-size: 1.75rem;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+  width: fit-content;
+}
+
+.form-header-display:hover {
+  background-color: #f5f3ff;
+}
+
+.form-description-input {
+  font-size: 1rem;
+  border: none;
+  padding: 0.5rem;
+  box-shadow: none;
+  margin-top: 0.25rem;
+}
+
+.form-description-display {
+  cursor: pointer;
+  font-size: 1rem;
+  color: #6b7280;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  width: fit-content;
+  transition: background-color 0.2s ease;
+}
+
+.form-description-display:hover {
+  background-color: #f5f3ff;
+}
