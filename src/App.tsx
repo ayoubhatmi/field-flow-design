@@ -1,22 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 import "@clayui/css/lib/css/atlas.css";
-
-const queryClient = new QueryClient();
+import FormListing from "@/pages/form-listing/FormListing";
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
- 
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  </QueryClientProvider>
+  <div className="p-4">
+    <FormListing />
+  </div>
 );
 
 export default App;
